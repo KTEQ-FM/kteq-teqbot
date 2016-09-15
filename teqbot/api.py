@@ -6,6 +6,16 @@ def get_channels(client):
     channels_call = client.api_call("channels.list")
     if channels_call.get('ok'):
         return channels_call['channels']
+    else:
+        return None
+
+def get_channel_id(client, channel):
+    "Get Specific Channel ID"
+    print("CLIENT",client)
+    channels = get_channels(client)
+    for c in channels:
+        if c['name'] == channel:
+            return c['id']
     return None
 
 def get_channel_info(client, channel_id):

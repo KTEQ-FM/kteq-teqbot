@@ -14,12 +14,14 @@ def usage():
     usage = usage + "Requirements:\n"
     usage = usage + "Python3\n"
     usage = usage + "slackclient python library\n"
+    usage = usage + "BeautifulSoup python library\n"
     usage = usage + "Slack API Token\n\n"    
     usage = usage + "Usage:\n"
     usage = usage + "python3 teqbot <command>\n\n"
     usage = usage + "Commands:\n\n"
     usage = usage + "\tusage         \t\tPrint Usage statement\n"
     usage = usage + "\tmessage <text>\t\tSend a test message to #boondoggling channel\n"
+    usage = usage + "\tnowplaying    \t\tStart Up Nowplaying messages to slack\n"
     return usage + "\n"
 
 def command_handler(args):
@@ -35,6 +37,8 @@ def command_handler(args):
             msg = " ".join(args[1:])
             print( "Sending \'" + msg + "\' to #boondoggling channel..." )
             print( test_slack_message( msg ) )
+    if args[0] == "NOWPLAYING":
+        teq.run(True)
 
 #simply prints some channel info, then sends message to #boondoggling
 def test_slack_message(message="Hello World!"):
@@ -43,7 +47,7 @@ def test_slack_message(message="Hello World!"):
         for channel in channels:
             #send a message to boondoggling
             if channel['name'] == 'boondoggling':
-                teq.set_channel(channel['id'])
+                teq.set_channel(channel['name'])
                 teq.set_message(message)
                 teq.send_message()
                 return "Message Sent."
