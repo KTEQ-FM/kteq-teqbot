@@ -11,7 +11,6 @@ def get_channels(client):
 
 def get_channel_id(client, channel):
     "Get Specific Channel ID"
-    print("CLIENT",client)
     channels = get_channels(client)
     for c in channels:
         if c['name'] == channel:

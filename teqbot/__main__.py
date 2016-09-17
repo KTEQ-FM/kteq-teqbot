@@ -3,6 +3,15 @@ from slackclient import SlackClient
 import os
 from teq import TeqBot
 
+NOW_PLAYING   = '00000001'
+STREAM_STATUS = '00000010'
+OPTION_3 = '00000100'
+OPTION_4 = '00001000'
+OPTION_5 = '00010000'
+OPTION_6 = '00100000'
+OPTION_7 = '01000000'
+OPTION_8 = '10000000'
+
 def usage():
     usage = "\n\n"
     usage = usage + "===============\n"
@@ -17,28 +26,57 @@ def usage():
     usage = usage + "BeautifulSoup python library\n"
     usage = usage + "Slack API Token\n\n"    
     usage = usage + "Usage:\n"
-    usage = usage + "python3 teqbot <command>\n\n"
+    usage = usage + "python3 teqbot <command> [options]\n\n"
     usage = usage + "Commands:\n\n"
-    usage = usage + "\tusage         \t\tPrint Usage statement\n"
+    usage = usage + "\tusage             \t\tPrint Usage statement\n"
+    usage = usage + "\tscheduler         \t\tRun the scheduler that handles calling each task\n"
+    usage = usage + "\ttask              \t\tRun an individual scheduler task\n"
+
+    usage = usage + "Scheduler Options:\n\n"    
+    usage = usage + "\t-n, --nowplaying  \t\tStart Up Nowplaying messages to slack\n"
+    usage = usage + "\t-s, --status      \t\tCheck the status of the stream\n"
+
+    usage = usage + "Test Commands:\n\n"
+    usage = usage + "\tkill          \t\tSend a message to stop the scheduler\n"
     usage = usage + "\tmessage <text>\t\tSend a test message to #boondoggling channel\n"
-    usage = usage + "\tnowplaying    \t\tStart Up Nowplaying messages to slack\n"
+
     return usage + "\n"
 
 def command_handler(args):
     'check what command line argument was handled'
     args[0] = args[0].upper()
     #handle MESSAGE command:
-    if args[0] == "USAGE":
+    if "USAGE" in args:
         # Print Usage Statement
         print( usage() )
-    if args[0] == "MESSAGE":
+    elif "MESSAGE" in args:
+        indx = args.index("MESSAGE")
         if len(args) > 1:
             # Send whatever message you enter as command line args
-            msg = " ".join(args[1:])
+            msg = " ".join(args[indx+1:])
             print( "Sending \'" + msg + "\' to #boondoggling channel..." )
-            print( test_slack_message( msg ) )
-    if args[0] == "NOWPLAYING":
-        teq.run(True)
+            #print( test_slack_message( msg ) )
+    elif "SCHEDULER" in args:
+        #reset stat file
+        teq.delete_stat_file()
+
+        # Set up all events to handle using BITWISE ops
+        event = '00000000'
+
+        if  "--nowplaying" in args or "-n" in args:
+            event = "{0:b}".format( int( event, 2) | int(NOW_PLAYING, 2) )
+        if "--status" in args or "-s" in args:
+            event = "{0:b}".format( int( event, 2) | int(STREAM_STATUS, 2) )
+        teq.scheduler(event)
+    elif "TASK" in args:
+        # ONLY run one individual task ONCE
+        if  "--nowplaying" in args or "-n" in args:
+            teq.task_now_playing()
+        elif "--status" in args or "-s" in args:
+            teq.task_stream_status()
+    elif "KILL" in args:
+        print("Halting Scheduler running on different process...")
+        teq.set_stat_file("Done")
 
 #simply prints some channel info, then sends message to #boondoggling
 def test_slack_message(message="Hello World!"):

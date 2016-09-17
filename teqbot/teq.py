@@ -7,18 +7,58 @@ import os
 import time
 import api
 import stream
+import shlex
+import subprocess
+
+NOW_PLAYING   = '00000001'
+STREAM_STATUS = '00000010'
+OPTION_3 = '00000100'
+OPTION_4 = '00001000'
+OPTION_5 = '00010000'
+OPTION_6 = '00100000'
+OPTION_7 = '01000000'
+OPTION_8 = '10000000'
+
+
+ROBOT_EMOJI = ':robot_face:'
+SKULL_EMOJI = ':skull:'
+MUSIC_EMOJI = ':musical_note:'
 
 class TeqBot:
     def __init__(self):
-        #print(os.environ.get('SLACK_TOKEN'))
         self.slack = SlackClient( os.environ.get('SLACK_TOKEN') )
-        #print(self.slack)
         self.stream = os.environ.get('KTEQ_STREAM_URL')
+        self.python = os.environ.get('PYTHONPATH')
         self.username = 'TEQ-BOT'
-        self.emoji    = ':robot_face:'
+        self.emoji    = ROBOT_EMOJI
         self.channel = None
         self.message = ""
         self.lastSong = ""
+
+    def scheduler(self, event='11111111', frequency=60):
+        # reset some flags
+        clock = 0
+        self.set_last_played("None")
+        self.set_stat_file("Running")
+        self.get_last_played()
+        while True:
+            if clock % frequency == 0:
+                nowPlaying = int( "{0:b}".format( int( event, 2) & int(NOW_PLAYING, 2) ) )
+                if nowPlaying:
+                    print("Handling NowPlaying Status...")
+                    self.spawn_task(self.python + " teqbot task --nowplaying")
+                streamStatus = int(  "{0:b}".format( int( event, 2) & int(STREAM_STATUS, 2) ) )
+                if streamStatus:
+                    print("Handling Stream Status...")
+                    self.spawn_task(self.python + " teqbot task --status")
+                clock = 0
+            clock = clock + 1
+            #print("Sleep for", abs(clock - frequency) + 1, "Seconds...")
+            time.sleep(1)
+            if self.check_stat_file("Done"):
+                self.delete_stat_file()
+                break
+        print("Finished Scheduler")
 
     def run(self, debug=False):
         'run TeqBot for a while'
@@ -27,38 +67,62 @@ class TeqBot:
         while True:
 
             #Updating Song
-            if debug:
-                print("Comparing", self.lastSong, "|", self.get_now_playing() )
-            newsong = self.compare_songs()
-            if newsong:
-                if debug:
-                    print("New Song")
-                self.set_emoji(':musical_note:')
-                self.set_message(self.lastSong)
-                self.set_channel("nowplaying")
-                self.send_message()
-                self.set_emoji(':robot_face:')
-            else:
-                if debug:
-                    print("Same Song")
+            self.task_now_playing()
 
             #Checking Stream Status
-            online = self.ping_stream()
-            if online:
-                if debug:
-                    print("Stream is up")
-            else:
-                if debug:
-                    print("!!ALERT!! STREAM IS DOWN!!")
-                self.set_emoji(':skull:')
-                self.set_message("RED ALERT! STREAM IS DOWN!!")
-                self.set_channel("emergency")
-                self.send_message()
-                self.set_emoji(':robot_face:')
+            self.task_stream_status()
+
             if debug:
                 print("Wait 30 seconds")
             time.sleep(30)
 
+
+    def spawn_task(self, command):
+        'Spawn a new task'
+        # can be made way more complex to handle more stuff
+        args = shlex.split(command)
+        p = subprocess.Popen(args)
+
+    def task_now_playing(self):
+        #Updating Song
+        self.get_last_played()
+        print("Comparing", self.lastSong, "|", self.get_now_playing() )
+        newsong = self.check_last_played()
+        if newsong:
+            print("New Song")
+            self.teq_message(self.lastSong, "nowplaying", MUSIC_EMOJI)
+        else:
+            print("Same Song")
+
+    def task_stream_status(self):
+        online, msg = self.ping_stream()
+        if online:
+            # Only do something if the stream HAD been down
+            # If this is the case, then let everyone know
+            # We are back online
+            if self.check_stat_file("Stream Down"):
+                self.set_stat_file("Running")
+                msg = "The Stream is Back Online!"
+                print(msg)
+                self.teq_message(msg, "emergency", ROBOT_EMOJI )
+            else:
+                print("Stream is Online")
+
+        else:
+            print(msg)
+            self.teq_message(msg, "emergency", SKULL_EMOJI )
+            self.set_stat_file("Stream Down")
+
+    def task_update_repo(self):
+        print("Update Repository")
+
+    def teq_message(self, message, channel, emoji):
+        'set emoji and prepare a message, send'
+        self.set_emoji(emoji)
+        self.set_message(message)
+        self.set_channel(channel)
+        self.send_message()
+        self.set_message(ROBOT_EMOJI)
 
     def set_emoji(self, emojiName):
         'change TeqBot emoji'
@@ -85,11 +149,13 @@ class TeqBot:
 
     def get_now_playing(self):
         'returns current song being played.'
-        return stream.ping_stream(self.stream, True)
+        ping, message = stream.ping_stream(self.stream)
+        return message
 
     def ping_stream(self):
         'returns True if stream is up, False if stream is down'
-        return stream.ping_stream(self.stream)
+        ping, message = stream.ping_stream(self.stream)
+        return ping, message
 
     def compare_songs(self):
         'check if this is a new song'
@@ -115,6 +181,54 @@ class TeqBot:
         #clear the message afterwards
         self.set_message("")
 
+
+    def set_last_played(self, song):
+        f = open('.teq.song', 'w')
+        f.write(song)
+
+    def get_last_played(self):
+        if os.path.exists('.teq.song'):
+            f = open('.teq.song', 'r')
+            self.lastSong = f.read()
+        else:
+            self.lastSong = ""
+
+    def check_last_played(self):
+        if os.path.exists('.teq.song'):
+            f = open('.teq.song', 'r')
+            check = self.get_now_playing()
+            song = f.read()
+            if song == "None":
+                self.set_last_song( check )
+                self.set_last_played( check )
+                return True
+
+            elif check != song:
+                # New Song
+                self.set_last_song( check )
+                self.set_last_played( check )
+                return True
+
+            else:
+                return False
+        else:
+            return False
+
+    def set_stat_file(self, status):
+        f = open('.teq.stat', 'w')
+        f.write(status)
+
+    def check_stat_file(self, check):
+        if os.path.exists('.teq.stat'):
+            f = open('.teq.stat', 'r')
+            stat = f.read()
+            return check == stat
+        else:
+            return False
+
+    def delete_stat_file(self):
+        if os.path.exists('.teq.stat'):
+            os.remove('.teq.stat')
 
 
 
