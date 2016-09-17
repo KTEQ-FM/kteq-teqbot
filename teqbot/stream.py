@@ -65,7 +65,7 @@ def ping_stream(url,debug=False):
     
 
 if __name__ == "__main__":
-    ping, message = ping_stream(os.environ.get('KTEQ_STREAM_URL'), True)
+    ping, message = ping_stream(os.environ.get('STREAM_URL'), True)
     if ping:
         print(message)
     else:

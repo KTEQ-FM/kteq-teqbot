@@ -27,7 +27,7 @@ MUSIC_EMOJI = ':musical_note:'
 class TeqBot:
     def __init__(self):
         self.slack = SlackClient( os.environ.get('SLACK_TOKEN') )
-        self.stream = os.environ.get('KTEQ_STREAM_URL')
+        self.stream = os.environ.get('STREAM_URL')
         self.python = os.environ.get('PYTHONPATH')
         self.username = 'TEQ-BOT'
         self.emoji    = ROBOT_EMOJI
