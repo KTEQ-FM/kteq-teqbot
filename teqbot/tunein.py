@@ -18,12 +18,12 @@ def post(sID, pID, pKey, metadata):
 
 def parseMetadata(metadata):
 	split  = metadata.split("by", 1)
-	song   = split[0]
-	artist = split[1]
+	song   = split[0].rstrip().lstrip()
+	artist = split[1].rstrip().lstrip()
 
 
 	#get rid of NowPlaying
-	fullsong = song.split("#Nowplaying: ", 1)
+	fullsong = song.split("#NowPlaying: ", 1)
 	if len(fullsong) > 1:
 		song = fullsong[1]
 	else:
