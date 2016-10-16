@@ -1,3 +1,7 @@
+"""
+KTEQ-FM STREAM STATUS FUNCTIONS
+"""
+
 import os
 import subprocess as sub
 from urllib.request import urlopen
