@@ -24,7 +24,7 @@ def parseMetadata(metadata):
 
 	#get rid of NowPlaying
 	fullsong = song.split("#Nowplaying: ", 1)
-	if len(fullsong > 1):
+	if len(fullsong) > 1:
 		song = fullsong[1]
 	else:
 		song = fullsong[0]
