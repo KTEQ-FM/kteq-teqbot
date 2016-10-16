@@ -1,3 +1,7 @@
+"""
+KTEQ-FM STREAM STATUS FUNCTIONS
+"""
+
 import os
 import subprocess as sub
 from urllib.request import urlopen
@@ -29,6 +33,7 @@ def prep_message(cause):
         msg = msg + "shutting down or from crashing.\n\n"
         msg = msg + "When diagnosing this issue, please check on AltaCast "
         msg = msg + "as well, because that could also possibly be down.\n"
+    return msg
 
 def now_playing(data):
     data = str(data[-1])

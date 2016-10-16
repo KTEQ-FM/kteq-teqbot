@@ -1,3 +1,7 @@
+"""
+KTEQ-FM SLACK API CALLS
+"""
+
 import os
 from slackclient import SlackClient
 
