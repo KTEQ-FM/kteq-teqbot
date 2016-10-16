@@ -5,9 +5,9 @@ def post(sID, pID, pKey, metadata):
 	#post song information to TuneIn
 
 	song, artist = parseMetadata(metadata)
-	msg = "http://air.radiotime.com/Playing.ashx?partnerId=" + str(pID)
-	msg = msg + "&partnerKey=" + str(pKey)
-	msg = msg + "&id=" + str(sID)
+	msg = "http://air.radiotime.com/Playing.ashx?partnerId=" + pID
+	msg = msg + "&partnerKey=" + pKey
+	msg = msg + "&id=" + sID
 	msg = msg + "&title=" + song
 	msg = msg + "&artist=" + artist
 	req = requests.get(msg)
