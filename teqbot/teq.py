@@ -96,7 +96,7 @@ class TeqBot:
             print("New Song")
             self.teq_message(self.lastSong, "nowplaying", MUSIC_EMOJI)
             #post metadata to TuneIn
-            self.teq_tunein(self.lastSong)
+            self.tunein(self.lastSong)
         else:
             print("Same Song")
 
