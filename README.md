@@ -19,6 +19,9 @@ TEQ-Bot: KTEQ-FM bot for monitoring stream status, current song playing, and equ
         $ export SLACK_TOKEN='your_slack_token'
         $ export STREAM_URL='your_online_stream_url'
         $ export PYTHONPATH='path_to_python3'
+        $ export TUNEIN_STATION_ID='your_tunein_station_id'  
+        $ export TUNEIN_PARTNER_ID='your_tunein_partner_id'  
+        $ export TUNEIN_PARTNER_KEY='your_tunein_partner_key'
 
 # Usage:
         $ python3 teqbot <command> [options]
