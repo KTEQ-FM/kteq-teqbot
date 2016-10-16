@@ -238,7 +238,7 @@ class TeqBot:
 
     def tunein(self, metadata):
         #post metadata to TuneIn afterformatting
-        tunein.post( self.tuneinStationID, self.tuneinPartnerID, self.tuneinPartnerKey metadata)
+        tunein.post( self.tuneinStationID, self.tuneinPartnerID, self.tuneinPartnerKey, metadata)
 
 
 
