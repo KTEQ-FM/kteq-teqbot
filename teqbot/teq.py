@@ -7,6 +7,7 @@ import os
 import time
 import api
 import stream
+import tunein
 import shlex
 import subprocess
 
@@ -29,6 +30,9 @@ class TeqBot:
         self.slack = SlackClient( os.environ.get('SLACK_TOKEN') )
         self.stream = os.environ.get('STREAM_URL')
         self.python = os.environ.get('PYTHONPATH')
+        self.tuneinStationID  = os.environ.get('TUNEIN_STATION_ID')
+        self.tuneinPartnerID  = os.environ.get('TUNEIN_PARTNER_ID')
+        self.tuneinPartnerKey = os.environ.get('TUNEIN_PARTNER_KEY')
         self.username = 'TEQ-BOT'
         self.emoji    = ROBOT_EMOJI
         self.channel = None
@@ -91,6 +95,8 @@ class TeqBot:
         if newsong:
             print("New Song")
             self.teq_message(self.lastSong, "nowplaying", MUSIC_EMOJI)
+            #post metadata to TuneIn
+            self.teq_tunein(self.lastSong)
         else:
             print("Same Song")
 
@@ -229,6 +235,10 @@ class TeqBot:
     def delete_stat_file(self):
         if os.path.exists('.teq.stat'):
             os.remove('.teq.stat')
+
+    def tunein(self, metadata):
+        #post metadata to TuneIn afterformatting
+        tunein.post( self.tuneinStationID, self.tuneinPartnerID, self.tuneinPartnerKey metadata)
 
 
 
