@@ -2,8 +2,7 @@
 KTEQ-FM STREAM STATUS FUNCTIONS
 """
 
-import os
-import subprocess as sub
+import sys
 from urllib.request import urlopen
 import urllib.error
 from bs4 import BeautifulSoup
@@ -11,6 +10,9 @@ from bs4 import BeautifulSoup
 #potential stream errors
 NO_DATA   = "no data read from Icecast Server"
 URL_ERROR = "HTTP Request Timeout"
+
+#how long to wait for timeout
+TIMEOUT_VALUE = 60
 
 def prep_message(cause="None"):
     """returns message
@@ -172,10 +174,60 @@ def now_playing(data):
     return data
 
 def ping_stream(url,debug=False):
+    """returns stream_status, message
+
+    perform an HTTP request to copy all html data from an Icecast
+    Stream. 
+
+    If html data was successfullly retrieved:
+        find all html tags labeled 'td' with attribute 'class=streamdata'
+        if data was found:
+            clean up the data to retrieve song information
+            report that the stream is up, return song information
+        if data was not found:
+            report that the stream is down, return NO_DATA error message
+    If HTTP request times out, resulting in no html data:
+        report that the stream is down, return URL_ERROR error message
+
+    This function uses the BeautifulSoup library for html parsing and
+    urllib library to perform an HTTP request. After a successful HTTP request,
+    the function parses the html retrieved from the stream's site. This 
+    returns all of the html used for the site, which is pruned down to 
+    instances of <td>, or table, tags in the site's html. In particular, this 
+    pruning is done on <td> tags that have been labeled with the class "streamdata".
+    While several of these cells contain other information about the stream, such 
+    as bitrate, number of current listeners, station name, etc., the last cell 
+    contains information about the currently playing song on the station as 
+    long as icecast is pushing out metadata containing such information.
+
+    If the http request fails to return any streamdata at all, this means that 
+    while the Icecast page is up, there are no encoders being broadcasted.
+
+    If the http request fails after the timeout threshold, this means that the 
+    Icecast page is possibly down.
+
+    :param url:   Online stream url
+    :param debug: Optional flag for debugging outputs (unused)
+
+    :type url: string
+    :type debug: boolean
+
+    :returns: stream_status, message: status of stream (true=up), message payload
+    :rtype: boolean, string
+
+    :Example:
+
+    >>> import stream
+    >>> url  = <YOUR_STREAM_URL_HERE>
+    >>> msg = stream.ping_stream(url)
+    >>> msg
+    (True, '#NowPlaying: I Think I Smell a Rat by The White Stripes')
+    """
+
     # Check the Stream
     try:
         # Try to access the page for 60 seconds
-        page = urlopen( url, timeout=60 )
+        page = urlopen( url, timeout=TIMEOUT_VALUE )
         soup = BeautifulSoup(page, 'html.parser')
 
         # Check to see if "streamdata" exists
@@ -192,12 +244,31 @@ def ping_stream(url,debug=False):
         # IceCast Server not set up, Altacast might also be down.
         return False, prep_message(URL_ERROR)
 
+def usage():
+    """returns msg
 
+    Print the usage statement for running stream.py standalone.
+
+    :returns: msg: Usage Statement
+    :rtype: string
+
+    >>> import stream
+    >>> msg = stream.usage()
+    >>> msg
+    'stream.py usage:\n$ python stream.py "<YOUR_STREAM_URL>"'
+    """
+    msg = "stream.py usage:\n"
+    msg = msg + "$ python stream.py \"<YOUR_STREAM_URL>\""
+    return msg
     
 
 if __name__ == "__main__":
-    ping, message = ping_stream(os.environ.get('STREAM_URL'), True)
-    if ping:
+    if(len(sys.argv) > 1):
+        ping, message = ping_stream(sys.argv[1], True)
+        if ping:
+            print("Station is online")
+        else:
+            print("Station is offline")
         print(message)
     else:
-        print(message)
+        print(usage())
