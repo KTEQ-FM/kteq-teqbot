@@ -5,7 +5,7 @@ KTEQ-FM TEQBOT CLASS
 from slackclient import SlackClient
 import os
 import time
-import api
+import slack
 import stream
 import tunein
 import shlex
@@ -136,7 +136,7 @@ class TeqBot:
     
     def set_channel(self, channel):
         'set the channel id for TeqBot'
-        self.channel = api.get_channel_id(self.slack, channel)
+        self.channel = slack.get_channel_id(self.slack, channel)
 
     def set_last_song(self, song):
         self.lastSong = song
@@ -147,11 +147,11 @@ class TeqBot:
 
     def get_channels(self):
         'get the list of channels'
-        return api.get_channels(self.slack)
+        return slack.get_channels(self.slack)
 
     def get_channel_info(self):
         'return channel info'
-        return api.get_channel_info(self.slack, self.channel)
+        return slack.get_channel_info(self.slack, self.channel)
 
     def get_now_playing(self):
         'returns current song being played.'
@@ -183,7 +183,7 @@ class TeqBot:
 
     def send_message(self):
         'send a predetermined message to TeqBots current channel'
-        api.send_message(self.slack, self.channel, self.message, self.username, self.emoji)
+        slack.send_message(self.slack, self.channel, self.message, self.username, self.emoji)
         #clear the message afterwards
         self.set_message("")
 
