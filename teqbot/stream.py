@@ -15,7 +15,7 @@ URL_ERROR = "HTTP Request Timeout"
 TIMEOUT_VALUE = 60
 
 def prep_message(cause="None"):
-    """returns message
+    """Prepare an error message to diagnose stream.
 
     Prepare a message to be generated and sent to the 
     slack channel designated for reporting stream incidents.
@@ -34,6 +34,7 @@ def prep_message(cause="None"):
 
     :param cause: the error that explains how the stream is down
     :type cause: string
+
     :returns: message
     :rtype: string
 
@@ -80,7 +81,7 @@ def prep_message(cause="None"):
     return msg
 
 def now_playing(data):
-    """returns data
+    """Clean up streamdata html to return song information.
 
     Clean up a portion of HTML that contains the data for
     whatever song is currently broadcasting on an IceCast 
@@ -144,6 +145,7 @@ def now_playing(data):
 
     :param data: HTML segment containing song information
     :type cause: string
+    
     :returns: data: cleaned data string, containing just song info 
     :rtype: string
 
@@ -174,7 +176,7 @@ def now_playing(data):
     return data
 
 def ping_stream(url,debug=False):
-    """returns stream_status, message
+    """Ping the music stream server for song info, stream status
 
     perform an HTTP request to copy all html data from an Icecast
     Stream. 
@@ -245,7 +247,7 @@ def ping_stream(url,debug=False):
         return False, prep_message(URL_ERROR)
 
 def usage():
-    """returns msg
+    """Print Usage Statement.
 
     Print the usage statement for running stream.py standalone.
 
