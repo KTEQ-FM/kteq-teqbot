@@ -67,7 +67,7 @@ def prep_message(cause="None"):
     Returns:
         msg (str): Error message based on cause of stream failure.
 
-    :Example:
+    Example:
 
         >>> import stream
         >>> msg = stream.prep_message(stream.NO_DATA)
@@ -181,7 +181,7 @@ def now_playing(data):
     Returns:
         data (str): cleaned data string, containing just the song info.
 
-    :Example:
+    Example:
 
         >>> import stream
         >>> from urllib.request import urlopen
@@ -249,7 +249,7 @@ def ping_stream(url,debug=False):
                 bool: True if stream is up, False if stream is down.
                 str: Song data if stream is up, Error message if stream is down
 
-    :Example:
+    Example:
 
         >>> import stream
         >>> url  = <YOUR_STREAM_URL_HERE>
@@ -285,7 +285,7 @@ def usage():
         msg (str): Usage Statement.
 
     Example:
-    
+
         >>> import stream
         >>> msg = stream.usage()
         >>> msg

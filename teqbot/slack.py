@@ -3,7 +3,11 @@
 This module contains all of the SlackClient API calls for the TeqBot project.
 These api calls are all located centrally within this module for convenience. 
 All API calls will be built in this module, and corresponding wapper functions 
-will be created for each of these calls for TeqBot to use.
+will be created for each of these calls for TeqBot to use. The slack API allows 
+for TeqBot to push posts onto slack channels.
+
+Please visit https://api.slack.com/ for more information on how the slack API 
+works.
 
 Example:
 
@@ -28,6 +32,7 @@ Attributes:
 
 Todo:
     * Create Additional API calls as they are needed.
+    * Look into how to make TeqBot respond to slack posts.
 
 .. _TeqBot GitHub Repository:
    https://github.com/kteq-fm/kteq-teqbot
@@ -177,7 +182,7 @@ def send_message(client, channel_id, message, username="TEQ-BOT", emoji=":robot_
                     if stream is down.
                 slack_msg (str): The message sent, or error message if call failed
 
-    :Example:
+    Example:
 
         >>> import slack
         >>> from slackclient import SlackClient
