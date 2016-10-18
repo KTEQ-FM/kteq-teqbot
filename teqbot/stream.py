@@ -1,5 +1,34 @@
-"""
-KTEQ-FM STREAM STATUS FUNCTIONS
+"""KTEQ-FM STREAM STATUS FUNCTIONS.
+
+This module contains the functions for retrieving stream status from an 
+IceCast music broadcast server. These functions are performed by making 
+HTTP requests to the IceCast server, then analyzing the html retrieved from 
+the site to determine stream status, and report what song is currently being 
+played on the station.
+
+Example:
+
+        $ python stream.py "<YOUR_STREAM_URL>"
+
+Running this module from command line, if provided with a valid IceCast stream
+url, will report whether the stream is currently online or not. If the stream 
+is online, the current song will also be reported.
+
+Attributes:
+    NO_DATA (str): Error Code. No data retrieved from IceCast Server.
+    URL_ERROR (str): Error Code. HTTP timeout, or bad internet connection.
+    TIMEOUT_VALUE(int): Amount of time in seconds HTTP request will wait 
+        before returning a urllib.error.URLError.
+
+Todo:
+    * Look into why false negatives are returned for stream status.
+
+.. _TeqBot GitHub Repository:
+   https://github.com/kteq-fm/kteq-teqbot
+
+.. _KTEQ-FM Website:
+   http://www.kteq.org/
+
 """
 
 import sys
@@ -32,21 +61,24 @@ def prep_message(cause="None"):
                they can also mean that the timeout occurs 
                because the Icecast page isn't up at all.
 
-    :param cause: the error that explains how the stream is down
-    :type cause: string
+    Args:
+        cause (str): the error that explains how the stream is down
 
-    :returns: message
-    :rtype: string
+    Returns:
+        msg (str): Error message based on cause of stream failure.
 
     :Example:
 
-    >>> import stream
-    >>> msg = stream.prep_message(stream.NO_DATA)
-    >>> msg
-    <Prints stream error message for NO_DATA case>
+        >>> import stream
+        >>> msg = stream.prep_message(stream.NO_DATA)
+        >>> msg
+        <Prints stream error message for NO_DATA case>
 
-    .. warning:: failing to supply cause param returns unknown error.
-    .. todo:: add any additional error types encountered.
+    Warning: 
+        Failing to supply cause param returns unknown error.
+    
+    Todo: 
+        Add any additional error types encountered.
     """
     msg = "ALERT!! STREAM IS DOWN!!\n"
     msg = msg + "Likely cause: \n"
@@ -143,27 +175,26 @@ def now_playing(data):
     same and this method should work for any number of encodings
     on a given server.)
 
-    :param data: HTML segment containing song information
-    :type cause: string
-    
-    :returns: data: cleaned data string, containing just song info 
-    :rtype: string
+    Args:
+        data (str): HTML segment containing song information 
+
+    Returns:
+        data (str): cleaned data string, containing just the song info.
 
     :Example:
 
-    >>> import stream
-    >>> from urllib.request import urlopen
-    >>> import urllib.error
-    >>> from bs4 import BeautifulSoup
-    >>> url  = <YOUR_STREAM_URL_HERE>
-    >>> page = urlopen( url, timeout=60 )
-    >>> soup = BeautifulSoup(page, 'html.parser')
-    >>> data = soup.findAll('td', attrs={"class" : "streamdata" })
-    >>> msg  = stream.now_playing(data)
-    >>> msg
-    '#NowPlaying Beat Market by Sun Machine'
+        >>> import stream
+        >>> from urllib.request import urlopen
+        >>> import urllib.error
+        >>> from bs4 import BeautifulSoup
+        >>> url  = <YOUR_STREAM_URL_HERE>
+        >>> page = urlopen( url, timeout=60 )
+        >>> soup = BeautifulSoup(page, 'html.parser')
+        >>> data = soup.findAll('td', attrs={"class" : "streamdata" })
+        >>> msg  = stream.now_playing(data)
+        >>> msg
+        '#NowPlaying Beat Market by Sun Machine'
     """
-
     # The very last <td> tagged value is the one we want. (contains song)
     data = str(data[-1])
 
@@ -208,25 +239,24 @@ def ping_stream(url,debug=False):
     If the http request fails after the timeout threshold, this means that the 
     Icecast page is possibly down.
 
-    :param url:   Online stream url
-    :param debug: Optional flag for debugging outputs (unused)
+    Args:
+        url (str): Online stream url.
+        debug (bool): Optional flag for debugging outputs (unused)
 
-    :type url: string
-    :type debug: boolean
+    Returns:
+            (tuple): tuple containing:
 
-    :returns: stream_status, message: status of stream (true=up), message payload
-    :rtype: boolean, string
+                bool: True if stream is up, False if stream is down.
+                str: Song data if stream is up, Error message if stream is down
 
     :Example:
 
-    >>> import stream
-    >>> url  = <YOUR_STREAM_URL_HERE>
-    >>> msg = stream.ping_stream(url)
-    >>> msg
-    (True, '#NowPlaying: I Think I Smell a Rat by The White Stripes')
+        >>> import stream
+        >>> url  = <YOUR_STREAM_URL_HERE>
+        >>> msg = stream.ping_stream(url)
+        >>> msg
+        (True, '#NowPlaying: I Think I Smell a Rat by The White Stripes')
     """
-
-    # Check the Stream
     try:
         # Try to access the page for 60 seconds
         page = urlopen( url, timeout=TIMEOUT_VALUE )
@@ -251,13 +281,15 @@ def usage():
 
     Print the usage statement for running stream.py standalone.
 
-    :returns: msg: Usage Statement
-    :rtype: string
+    Returns:
+        msg (str): Usage Statement.
 
-    >>> import stream
-    >>> msg = stream.usage()
-    >>> msg
-    'stream.py usage:\n$ python stream.py "<YOUR_STREAM_URL>"'
+    Example:
+    
+        >>> import stream
+        >>> msg = stream.usage()
+        >>> msg
+        'stream.py usage:\n$ python stream.py "<YOUR_STREAM_URL>"'
     """
     msg = "stream.py usage:\n"
     msg = msg + "$ python stream.py \"<YOUR_STREAM_URL>\""
