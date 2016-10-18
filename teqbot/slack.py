@@ -1,26 +1,16 @@
-"""
-KTEQ-FM SLACK API CALLS
-"""
-
 """KTEQ-FM SLACK API CALLS.
 
-This module contains the TeqBot class, the main component of the kteq-teqbot 
-project. Several methods in this class serve as wrappers for API calls and 
-other scripts in this repository. This abstraction was implemented so that 
-all of the complicated logic could be separated from this module, 
-allowing most of the TeqBot module to handle scheduling tasks.
+This module contains all of the SlackClient API calls for the TeqBot project.
+These api calls are all located centrally within this module for convenience. 
+All API calls will be built in this module, and corresponding wapper functions 
+will be created for each of these calls for TeqBot to use.
 
 Example:
 
         $ python slack.py "<YOUR_SLACK_WEB_API_TOKEN>"
 
-Ordinarily, the teqbot.py module will not be run via command line. Instead, 
-the module will be loaded in, allowing for an instance of the TeqBot class 
-to be created. This class can run a scheduler for performing various tasks 
-related to a provided IceCast music station. Current tasks involve updating 
-metadata from a music stream to slack and TuneIn, as well as sending stream 
-status updates to slack with diagnosis messages when the stream is not 
-operating properly.
+Running this module from command line, if provided with a valid slack web API 
+token, will list all public channels for the provided slack team.
 
 Attributes:
     STANDARD_FREQUENCY (int): default frequency in seconds for scheduler
@@ -35,16 +25,9 @@ Attributes:
     ROBOT_EMOJI (str): robot face emoji
     SKULL_EMOJI (str): skull emoji
     MUSIC_EMOJI (str): musical note emoji
-        either the ``Attributes`` section of the module docstring, or in an
-        inline docstring immediately following the variable.
-
-        Either form is acceptable, but the two should not be mixed. Choose
-        one convention to document module level variables and be consistent
-        with it.
 
 Todo:
-    * Create the update task for automatically updating scheduler
-    * Create other additional tasks as they are needed
+    * Create Additional API calls as they are needed.
 
 .. _TeqBot GitHub Repository:
    https://github.com/kteq-fm/kteq-teqbot
