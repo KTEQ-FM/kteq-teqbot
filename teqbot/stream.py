@@ -176,7 +176,7 @@ def now_playing(data):
     on a given server.)
 
     Args:
-        data (str): HTML segment containing song information 
+        data (bs4.element.ResultSet): HTML segment containing song information 
 
     Returns:
         data (str): cleaned data string, containing just the song info.
@@ -206,7 +206,51 @@ def now_playing(data):
     data = "#NowPlaying: " + data
     return data
 
-def ping_stream(url,debug=False):
+def current_listeners(data):
+    """Clean up streamdata html to return listener information.
+
+    Parse through HTML to detemine listener count.
+
+    Args:
+        data (bs4.element.ResultSet): HTML segment containing 
+            listener information 
+
+    Returns:
+        data (list): A pair of number in a list, corresponding to current 
+            and peak listeners, respectively
+
+    Example:
+
+        >>> import stream
+        >>> from urllib.request import urlopen
+        >>> import urllib.error
+        >>> from bs4 import BeautifulSoup
+        >>> url  = <YOUR_STREAM_URL_HERE>
+        >>> page = urlopen( url, timeout=60 )
+        >>> soup = BeautifulSoup(page, 'html.parser')
+        >>> data = soup.findAll('td')
+        >>> msg  = stream.current_listeners(data)
+        >>> msg
+        [2, 16]
+    """
+    # The very last <td> tagged value is the one we want. (contains song)
+
+    current = 0 # current listeners
+    peak    = 0 # peak listeners
+
+    for i in range(0, len(data)):
+        if "Current Listeners:" in data[i].text:
+            # next value corresponds to current listener count
+            # for a particular encoding.
+            current = current + int(data[i+1].text)
+        elif "Peak Listeners:" in data[i].text:
+            # next value corresponds to peak listener count
+            # for a particular encoding.
+            peak = peak + int(data[i+1].text)
+    
+    return [current, peak]
+
+def ping_stream(url,listeners=False,debug=False):
     """Ping the music stream server for song info, stream status
 
     perform an HTTP request to copy all html data from an Icecast
@@ -265,6 +309,12 @@ def ping_stream(url,debug=False):
         # Check to see if "streamdata" exists
         data = soup.findAll('td', attrs={"class" : "streamdata" })
 
+        # Also get counts
+        count = soup.findAll('td')
+
+        if listeners and len(count) > 0:
+            # Stream is up, let's retrieve listener count
+            return True, current_listeners(count)
         if len(data) > 0:
             # Stream is up, and retrieved current song data
             return True, now_playing(data)
@@ -298,11 +348,14 @@ def usage():
 
 if __name__ == "__main__":
     if(len(sys.argv) > 1):
-        ping, message = ping_stream(sys.argv[1], True)
+        ping, message = ping_stream(sys.argv[1], False, True)
+        ping, counts = ping_stream(sys.argv[1], True, True)
         if ping:
             print("Station is online")
         else:
             print("Station is offline")
         print(message)
+        print("Current Listeners:", counts[0])
+        print("Peak    Listeners:", counts[1])
     else:
         print(usage())
