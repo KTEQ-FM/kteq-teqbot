@@ -242,7 +242,7 @@ class TeqBot:
         if newsong:
             print("New Song")
             # update #nowplaying on slack
-            self.teq_message(self.lastSong, "nowplaying", MUSIC_EMOJI)
+            self.teq_message(self.now_playing(self.lastSong), "nowplaying", MUSIC_EMOJI)
             # post metadata to TuneIn
             self.tunein(self.lastSong)
         else:
@@ -675,6 +675,17 @@ class TeqBot:
         """
         tunein.post( self.tuneinStationID, self.tuneinPartnerID, self.tuneinPartnerKey, metadata)
 
+    def now_playing(self, metadata):
+        """Clean Metadata for posting to slack.
+
+        Note:
+            The reason for the formatting is so that tunein
+            can distinguish where the split between artist 
+            and song are in the metadata. Other streams 
+            don't seem to particularly care about this 
+            distinction.
+        """
+        return metadata.replace("__by__", "by")
 
 if __name__ == "__main__":
     teq = TeqBot()
