@@ -32,6 +32,7 @@ Todo:
 
 import requests
 import sys
+import urllib.parse
 
 def post(sID, pID, pKey, metadata):
     """Post song information to TuneIn.
@@ -78,7 +79,7 @@ def post(sID, pID, pKey, metadata):
     msg = "http://air.radiotime.com/Playing.ashx?partnerId=" + pID
     msg = msg + "&partnerKey=" + pKey
     msg = msg + "&id=" + sID
-    msg = msg + "&title=" + song
+    msg = msg + "&title="  + song
     msg = msg + "&artist=" + artist
 
     #prints the HTTP request to terminal, sends out as HTTP GET request
@@ -123,7 +124,7 @@ def parseMetadata(metadata):
         won't be entered on the DJ's end when recording 
         songs on the station computer.
     """
-    split  = metadata.split("by", 1)
+    split  = metadata.split("__by__", 1)
     song   = split[0].rstrip().lstrip()
     artist = split[1].rstrip().lstrip()
 
@@ -135,8 +136,8 @@ def parseMetadata(metadata):
         song = fullsong[0]
 
     #clean up the song and artist strings
-    song   = song.replace(" ", "+")
-    artist = artist.replace(" ", "+")
+    song   = urllib.parse.quote_plus(song)
+    artist = urllib.parse.quote_plus(artist)
 
     #return song and artist pair
     return song, artist
