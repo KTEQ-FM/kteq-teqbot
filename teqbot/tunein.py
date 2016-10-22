@@ -168,7 +168,7 @@ def usage():
 
 if __name__ == "__main__":
     if(len(sys.argv) > 5):
-        metadata =  sys.argv[4] + " by " + sys.argv[5]
+        metadata =  sys.argv[4] + " __by__ " + sys.argv[5]
         post(sys.argv[1], sys.argv[2],  sys.argv[3], metadata)
     else:
         print(usage())
