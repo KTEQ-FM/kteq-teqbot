@@ -80,7 +80,8 @@ def post(sID, pID, pKey, metadata):
     msg = msg + "&partnerKey=" + pKey
     msg = msg + "&id=" + sID
     msg = msg + "&title="  + song
-    msg = msg + "&artist=" + artist
+    if artist:
+        msg = msg + "&artist=" + artist
 
     #prints the HTTP request to terminal, sends out as HTTP GET request
     print("Sending HTTP GET REQUEST:", msg)
@@ -133,7 +134,7 @@ def parseMetadata(metadata):
     if len(split) > 1:
         artist = split[1].rstrip().lstrip()
     else:
-        artist = "KTEQ-FM"
+        artist = None
 
     # get rid of NowPlaying tag, if present
     fullsong = song.split("#NowPlaying: ", 1)
