@@ -10,7 +10,7 @@ OPTION_4 = '00001000'
 OPTION_5 = '00010000'
 OPTION_6 = '00100000'
 OPTION_7 = '01000000'
-OPTION_8 = '10000000'
+UPDATE_REPO   = '10000000'
 
 def usage():
     usage = "\n\n"
@@ -67,6 +67,8 @@ def command_handler(args):
             event = "{0:b}".format( int( event, 2) | int(NOW_PLAYING, 2) )
         if "--status" in args or "-s" in args:
             event = "{0:b}".format( int( event, 2) | int(STREAM_STATUS, 2) )
+        if "--update" in args or "-u" in args:
+            event = "{0:b}".format( int( event, 2) | int(UPDATE_REPO, 2) )
         teq.scheduler(event)
     elif "TASK" in args:
         # ONLY run one individual task ONCE
@@ -74,6 +76,8 @@ def command_handler(args):
             teq.task_now_playing()
         elif "--status" in args or "-s" in args:
             teq.task_stream_status()
+        elif "--update" in args or "-u" in args:
+            teq.task_update_repo()
     elif "KILL" in args:
         print("Halting Scheduler running on different process...")
         teq.set_stat_file("Done")

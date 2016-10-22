@@ -63,7 +63,7 @@ OPTION_4      = '00001000'
 OPTION_5      = '00010000'
 OPTION_6      = '00100000'
 OPTION_7      = '01000000'
-OPTION_8      = '10000000'
+UPDATE_REPO   = '10000000'
 
 #feel free to add more emojis to this list
 ROBOT_EMOJI = ':robot_face:'
@@ -158,6 +158,7 @@ class TeqBot:
         # reset some flags
         nowPlayingClock   = 0
         streamStatusClock = 0
+        updateRepoClock   = 0
         self.set_last_played("None")
         self.set_stat_file("Running")
         self.get_last_played()
@@ -165,6 +166,7 @@ class TeqBot:
         # determine which tasks will be called
         nowPlaying   = int( "{0:b}".format( int( event, 2) & int(NOW_PLAYING,   2) ) )
         streamStatus = int( "{0:b}".format( int( event, 2) & int(STREAM_STATUS, 2) ) )
+        updateRepo   = int( "{0:b}".format( int( event, 2) & int(UPDATE_REPO,   2) ) )
 
 
         while True:
@@ -180,10 +182,10 @@ class TeqBot:
                     print("Handling Stream Status...")
                     self.spawn_task(self.python + " teqbot task --status")
                 streamStatusClock = 0
-            
-            # update clocks
-            nowPlayingClock   = nowPlayingClock   + 1
-            streamStatusClock = streamStatusClock + 1
+            if updateRepoClock % (frequency * 100) == 0:
+                # update repo
+                print("Updating TeqBot...")
+                self.spawn_task(self.python + " teqbot task --update")
             time.sleep(1)
 
             # break out of the scheduler if stat file contains "Done"
@@ -320,7 +322,9 @@ class TeqBot:
                 the scheduler itself. Keep this in mind.
 
         """
-        print("Update Repository")
+
+        # temporary solution...
+        self.spawn_task("/usr/bin/git pull")
 
     def teq_message(self, message, channel, emoji):
         """Create a message, set post emoji, then post message to slack.
