@@ -174,7 +174,7 @@ class TeqBot:
                     print("Handling NowPlaying Status...")
                     self.spawn_task(self.python + " teqbot task --nowplaying")
                 nowPlayingClock = 0
-            if streamClock % (frequency * 5) == 0:
+            if streamStatusClock % (frequency * 5) == 0:
                 # only check status at 1/5th frequency
                 if streamStatus:
                     print("Handling Stream Status...")
@@ -277,7 +277,11 @@ class TeqBot:
             it is for your stream to be online constantly.
 
         """
-        online, msg = self.ping_stream()
+        for i in range(0, 5):
+            online, msg = self.ping_stream()
+            # make 5 attempts to connect.
+            if online:
+                break
         if online:
             # Only do something if the stream HAD been down
             # If this is the case, then let everyone know
