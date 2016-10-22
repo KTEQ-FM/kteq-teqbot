@@ -159,6 +159,7 @@ class TeqBot:
         nowPlayingClock   = 0
         streamStatusClock = 0
         updateRepoClock   = 0
+
         self.set_last_played("None")
         self.set_stat_file("Running")
         self.get_last_played()
@@ -171,23 +172,25 @@ class TeqBot:
 
         while True:
             #trigger events
-            if nowPlayingClock % frequency == 0:
-                if nowPlaying:
-                    print("Handling NowPlaying Status...")
-                    self.spawn_task(self.python + " teqbot task --nowplaying")
+            if nowPlaying and nowPlayingClock % frequency == 0:
+                print("Handling NowPlaying Status...")
+                self.spawn_task(self.python + " teqbot task --nowplaying")
                 nowPlayingClock = 0
-            if streamStatusClock % (frequency * 5) == 0:
-                # only check status at 1/5th frequency
-                if streamStatus:
-                    print("Handling Stream Status...")
-                    self.spawn_task(self.python + " teqbot task --status")
+            if streamStatus and streamStatusClock % (frequency * 5) == 0:
+                # only check status at 1/5th frequency  
+                print("Handling Stream Status...")
+                self.spawn_task(self.python + " teqbot task --status")
                 streamStatusClock = 0
-            if updateRepoClock % (frequency * 100) == 0:
+            if updateRepo and updateRepoClock % (frequency * 100) == 0:
                 # update repo
                 print("Updating TeqBot...")
                 self.spawn_task(self.python + " teqbot task --update")
+                updateRepoClock = 0
             time.sleep(1)
 
+            nowPlayingClock   = nowPlayingClock   + 1
+            streamStatusClock = streamStatusClock + 1
+            updateRepoClock   = updateRepoClock   + 1
             # break out of the scheduler if stat file contains "Done"
             if self.check_stat_file("Done"):
                 self.delete_stat_file()
