@@ -124,11 +124,18 @@ def parseMetadata(metadata):
         won't be entered on the DJ's end when recording 
         songs on the station computer.
     """
+
+    # split the metadata at the correct position
     split  = metadata.split("__by__", 1)
     song   = split[0].rstrip().lstrip()
-    artist = split[1].rstrip().lstrip()
+    
+    # check if artist and song were split
+    if len(split) > 1:
+        artist = split[1].rstrip().lstrip()
+    else:
+        artist = "KTEQ-FM"
 
-    #get rid of NowPlaying
+    # get rid of NowPlaying tag, if present
     fullsong = song.split("#NowPlaying: ", 1)
     if len(fullsong) > 1:
         song = fullsong[1]
