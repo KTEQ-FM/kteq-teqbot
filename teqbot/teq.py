@@ -345,9 +345,13 @@ class TeqBot:
         self.set_emoji(emoji)
         self.set_message(message)
         self.set_channel(channel)
-        self.send_message()
+        status, msg = self.send_message()
         # reset the emoji to the standard robot face
         self.set_emoji(ROBOT_EMOJI)
+        if status:
+            print("Sent Message:", msg )
+        else:
+            print("Error: ", msg )
 
     def set_emoji(self, emojiName):
         """Set the emoji used to represent TeqBot on slack.
@@ -539,9 +543,10 @@ class TeqBot:
             be called, rather than consecutive setter methods, then this one.
 
         """
-        slack.send_message(self.slack, self.channel, self.message, self.username, self.emoji)
+        status, msg = slack.send_message(self.slack, self.channel, self.message, self.username, self.emoji)
         #clear the message afterwards
         self.set_message("")
+        return status, msg
 
 
     def set_last_played(self, song):
