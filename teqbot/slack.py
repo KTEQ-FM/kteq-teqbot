@@ -96,8 +96,8 @@ def get_channel_id(client, channel):
         '<GENERAL_CHANNEL_ID>'
     """
     channels = get_channels(client)
-    for channel in channels:
-        if channel['name'] == channel:
+    for c in channels:
+        if c['name'] == channel:
             return channel['id']
     return None
 
@@ -125,8 +125,8 @@ def get_channel_name(client, channel_id):
     """
     "Get Specific Channel Name"
     channels = get_channels(client)
-    for channel in channels:
-        if channel['id'] == channel_id:
+    for c in channels:
+        if c['id'] == channel_id:
             return channel['name']
     return None
 
