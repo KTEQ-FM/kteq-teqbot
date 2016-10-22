@@ -98,7 +98,7 @@ def get_channel_id(client, channel):
     channels = get_channels(client)
     for c in channels:
         if c['name'] == channel:
-            return channel['id']
+            return c['id']
     return None
 
 def get_channel_name(client, channel_id):
@@ -127,7 +127,7 @@ def get_channel_name(client, channel_id):
     channels = get_channels(client)
     for c in channels:
         if c['id'] == channel_id:
-            return channel['name']
+            return c['name']
     return None
 
 def get_channel_info(client, channel_id):
