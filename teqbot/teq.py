@@ -169,7 +169,10 @@ class TeqBot:
         streamStatus = int( "{0:b}".format( int( event, 2) & int(STREAM_STATUS, 2) ) )
         updateRepo   = int( "{0:b}".format( int( event, 2) & int(UPDATE_REPO,   2) ) )
 
-
+        nowPlaying = True
+        streamStatus = True
+        
+        print("running Scheduler")
         while True:
             #trigger events
             if nowPlaying and nowPlayingClock % frequency == 0:
@@ -187,7 +190,7 @@ class TeqBot:
                 self.spawn_task(self.python + " teqbot task --update")
                 updateRepoClock = 0
             time.sleep(1)
-
+            print(nowPlayingClock,streamStatusClock,updateRepoClock)
             nowPlayingClock   = nowPlayingClock   + 1
             streamStatusClock = streamStatusClock + 1
             updateRepoClock   = updateRepoClock   + 1
