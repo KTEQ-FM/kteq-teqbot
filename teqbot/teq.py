@@ -268,9 +268,9 @@ class TeqBot:
 
         If the stream is offline, TeqBot will use the message 
         returned by TeqBot.ping_stream() to diagnose the problem. 
-        TeqBot will then notify the #emergency channel that 
+        TeqBot will then notify the #engineering channel that 
         the stream is down, as well as provide the error message.
-        TeqBot will inform the #emergency channel that the stream 
+        TeqBot will inform the #engineering channel that the stream 
         is still down every time the event is triggered until the 
         stream is restored to an online status.
 
@@ -280,7 +280,7 @@ class TeqBot:
             the stream status will only be checked once every 
             five minutes.
             In order for TeqBot to successfully post to slack,
-            create an "#emergency" channel. Make sure this channel 
+            create an "#engineering" channel. Make sure this channel 
             has notifications on often, depending on how urgent 
             it is for your stream to be online constantly.
 
@@ -298,13 +298,13 @@ class TeqBot:
                 self.set_stat_file("Running")
                 msg = "The Stream is Back Online!"
                 print(msg)
-                self.teq_message(msg, "emergency", ROBOT_EMOJI )
+                self.teq_message(msg, "engineering", ROBOT_EMOJI )
             else:
                 print("Stream is Online")
         else:
             # stream is down, let everyone know
             print(msg)
-            self.teq_message(msg, "emergency", SKULL_EMOJI )
+            self.teq_message(msg, "engineering", SKULL_EMOJI )
             self.set_stat_file("Stream Down")
 
     def task_update_repo(self):
