@@ -13,6 +13,16 @@ TEQ-Bot: KTEQ-FM bot for monitoring stream status, current song playing, and equ
 * install beautifulsoup4 for python 3
 
         $ pip install beautifulsoup4
+	
+* Obtain API Keys for Slack, Tunein, and Genius
+
+  * Slack API information can be found  <a href="https://api.slack.com/" target="_blank">here</a>.
+  * TuneIn API information can be found  <a href="http://tunein.com/broadcasters/api/" target="_blank">here</a>.
+  * Genius API information can be found  <a href="https://docs.genius.com/" target="_blank">here</a>.
+
+* Install the KTEQ Song Logger:
+
+  * Installation can be found  <a href="https://github.com/KTEQ-FM/kteq-song-log" target="_blank">here</a>.
 
 * add the following environment variable exports to your ~/.profile:
 
@@ -22,6 +32,9 @@ TEQ-Bot: KTEQ-FM bot for monitoring stream status, current song playing, and equ
         $ export TUNEIN_STATION_ID='your_tunein_station_id'  
         $ export TUNEIN_PARTNER_ID='your_tunein_partner_id'  
         $ export TUNEIN_PARTNER_KEY='your_tunein_partner_key'
+        $ export GENIUS_TOKEN='your_genius_token'
+        $ export LOGGERPATH='path_to_song_logger'
+
 
 # Usage:
         $ python3 teqbot <command> [options]
@@ -36,7 +49,8 @@ TEQ-Bot: KTEQ-FM bot for monitoring stream status, current song playing, and equ
 
         	-n, --nowplaying  		Start Up Nowplaying messages to slack
         	-s, --status      		Check the status of the stream
-
+        	-l, --lyric                     Update Lyrics being output to song logger
+		
         Test Commands:
         
         	kill          		Send a message to stop the scheduler

@@ -5,12 +5,12 @@ from teq import TeqBot
 
 NOW_PLAYING   = '00000001'
 STREAM_STATUS = '00000010'
-OPTION_3 = '00000100'
-OPTION_4 = '00001000'
-OPTION_5 = '00010000'
-OPTION_6 = '00100000'
-OPTION_7 = '01000000'
-OPTION_8 = '10000000'
+CHECK_LYRICS  = '00000100'
+SWEAR_LOG     = '00001000'
+OPTION_5      = '00010000'
+OPTION_6      = '00100000'
+OPTION_7      = '01000000'
+UPDATE_REPO   = '10000000'
 
 def usage():
     usage = "\n\n"
@@ -24,7 +24,7 @@ def usage():
     usage = usage + "Python3\n"
     usage = usage + "slackclient python library\n"
     usage = usage + "BeautifulSoup python library\n"
-    usage = usage + "Slack API Token\n\n"    
+    usage = usage + "Slack API Token\n\n"
     usage = usage + "Usage:\n"
     usage = usage + "python3 teqbot <command> [options]\n\n"
     usage = usage + "Commands:\n\n"
@@ -32,9 +32,11 @@ def usage():
     usage = usage + "\tscheduler         \t\tRun the scheduler that handles calling each task\n"
     usage = usage + "\ttask              \t\tRun an individual scheduler task\n"
 
-    usage = usage + "Scheduler Options:\n\n"    
+    usage = usage + "Scheduler Options:\n\n"
     usage = usage + "\t-n, --nowplaying  \t\tStart Up Nowplaying messages to slack\n"
     usage = usage + "\t-s, --status      \t\tCheck the status of the stream\n"
+    usage = usage + "\t-l, --lyric       \t\tUpdate Lyrics being output to song logger\n"
+    usage = usage + "\t-w, --swear       \t\tSend Swear Logs to slack\n"
 
     usage = usage + "Test Commands:\n\n"
     usage = usage + "\tkill          \t\tSend a message to stop the scheduler\n"
@@ -67,6 +69,12 @@ def command_handler(args):
             event = "{0:b}".format( int( event, 2) | int(NOW_PLAYING, 2) )
         if "--status" in args or "-s" in args:
             event = "{0:b}".format( int( event, 2) | int(STREAM_STATUS, 2) )
+        if "--lyric" in args or "-l" in args:
+            event = "{0:b}".format( int( event, 2) | int(CHECK_LYRICS, 2) )
+        if "--swear" in args or "-w" in args:
+            event = "{0:b}".format( int( event, 2) | int(SWEAR_LOG, 2) )
+        if "--update" in args or "-u" in args:
+            event = "{0:b}".format( int( event, 2) | int(UPDATE_REPO, 2) )
         teq.scheduler(event)
     elif "TASK" in args:
         # ONLY run one individual task ONCE
@@ -74,6 +82,12 @@ def command_handler(args):
             teq.task_now_playing()
         elif "--status" in args or "-s" in args:
             teq.task_stream_status()
+        elif "--lyric" in args or "-l" in args:
+            teq.task_check_lyrics()
+        elif "--swear" in args or "-w" in args:
+            teq.task_swear_log()
+        elif "--update" in args or "-u" in args:
+            teq.task_update_repo()
     elif "KILL" in args:
         print("Halting Scheduler running on different process...")
         teq.set_stat_file("Done")
@@ -99,4 +113,3 @@ if len(args) > 1:
     command_handler( args[1:] )
 else:
     print( usage() )
-
