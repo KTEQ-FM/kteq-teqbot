@@ -22,8 +22,8 @@ Attributes:
     STANDARD_FREQUENCY (int): default frequency in seconds for scheduler
     NOW_PLAYING (str): bitstring corresponding to now playing task
     STREAM_STATUS (str): bitstring corresponding to stream status task
-    OPTION_3 (str): bitstring corresponding to placeholder task 3
-    OPTION_4 (str): bitstring corresponding to placeholder task 4
+    CHECK_LYRICS (str): bitstring corresponding to check lyrics task
+    SWEAR_LOG (str): bitstring corresponding to swear log task
     OPTION_5 (str): bitstring corresponding to placeholder task 5
     OPTION_6 (str): bitstring corresponding to placeholder task 6
     OPTION_7 (str): bitstring corresponding to placeholder task 7
@@ -51,6 +51,7 @@ import slack
 import stream
 import tunein
 import genius
+import log
 import shlex
 import subprocess
 
@@ -200,7 +201,7 @@ class TeqBot:
             if swearLog and swearLogClock % frequency == 0:
                 # update repo at normal frequency
                 print("Checking Swear Log...")
-                #self.spawn_task(self.python + " teqbot task --update")
+                self.spawn_task(self.python + " teqbot task --swear")
                 swearLogClock = 1
             if updateRepo and updateRepoClock % (frequency * 1200) == 0:
                 # update repo at 1/1200th frequency
@@ -399,7 +400,32 @@ class TeqBot:
         This task incorporates functionality with the kteq-song-logger
         program found at https://github.com/KTEQ-FM/kteq-song-log.
         """
-        pass
+
+
+        # Read json file
+        filename = "swear.json"
+        filename = os.path.join(self.logger, filename)
+
+        data = log.read_json(filename)
+
+        filename = "lastSwear.json"
+        filename = os.path.join(self.logger, filename)
+        lastSwear = log.read_json(filename)
+
+        print("LOG: Comparing\n", data, "|\n", lastSwear )
+        if not log.compare_json(data, lastSwear):
+            # Not Identical, New json file
+            log.write_json(data,filename)
+
+            swear_msg = log.generate_swear_log(data)
+
+            # If message contains anything, submit
+            if swear_msg:
+                self.teq_message(swear_msg, "engineering", SKULL_EMOJI)
+            print("New Log Found")
+
+
+
 
     def task_update_repo(self):
         """Update TeqBot's repository (NOT IMPLEMENTED)

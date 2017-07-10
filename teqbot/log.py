@@ -40,7 +40,24 @@ def compare_json(json1,json2):
     Returns:
         (boolean): True if identical, False if not
     """
-    return json1 is json2
+    # Iterate Through First
+    for key, value in json1.items():
+        if key not in json2:
+            return False
+        else:
+            if value != json2[key]:
+                return False
+
+    # Iterate Through Last
+    for key, value in json2.items():
+        if key not in json1:
+            return False
+        else:
+            if value != json1[key]:
+                return False
+
+    # Must be identical
+    return True
 
 def read_json(filename):
     """Read JSON file and store to a variable.
@@ -112,18 +129,16 @@ def generate_swear_log(data):
 
     if validate(data, LOG_SWEAR):
         msg += "```\n"
+        msg += "SWEAR LOG SUBMISSION FROM " + data['show name'] + ":\n\n"
         msg += "Date         \t" + data['date']           + "\n"
         msg += "Time         \t" + data['time']           + "\n"
         msg += "Song     Name\t" + data['song title']     + "\n"
         msg += "Song   Artist\t" + data['song artist']    + "\n"
         msg += "Song Composer\t" + data['song composer']  + "\n"
-        msg += "Show     Name\t" + data['show name']      + "\n"
-        msg += "```\n\n```\n"
+        msg += "\n\n"
 
         msg += "Report:    \t" + data['report']
         msg += "```"
-    else:
-        msg += "Improperly formatted data..."
 
     return msg
 
