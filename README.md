@@ -49,7 +49,7 @@ TEQ-Bot: KTEQ-FM bot for monitoring stream status, current song playing, and equ
 
         	-n, --nowplaying  		Start Up Nowplaying messages to slack
         	-s, --status      		Check the status of the stream
-                -l, --lyric                     Update Lyrics being output to song logger
+        	-l, --lyric                     Update Lyrics being output to song logger
 		
         Test Commands:
         
