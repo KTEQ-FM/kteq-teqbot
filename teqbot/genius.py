@@ -1,26 +1,27 @@
 """KTEQ-FM GENIUS API FUNCTIONS.
 
-This module contains all of the TuneIn AIR API calls for the TeqBot project.
+This module contains all of the Genius API calls for the TeqBot project.
 These api calls are all located centrally within this module for convenience.
 All API calls will be built in this module, and corresponding wapper functions
-will be created for each of these calls for TeqBot to use. The TuneIn AIR API
-is used to update the song metadata on the TuneIn streaming application. This
-allows for listeners to get real-time updates on songs being broadcast from the
-online stream, with accompanying album art if available.
+will be created for each of these calls for TeqBot to use. The Genius API
+is used to look up song lyric information on the Genius lyrics website. This
+allows for DJs to get an updated lyrics page for each song they log while
+doing their set, as well as provide a preliminary search for profanity for
+each song.
 
 Please visit https://docs.genius.com/ for more information on how the
 Genius API works.
 
 Example:
 
-        $ python tunein.py "<TUNEIN_STATION_ID>" "<PARTNER_ID>" "<PARTNER_KEY>" "song" "artist"
+        $ python genius.py "<SONG_NAME>" "<SONG_NAME>" "<GENIUS_TOKEN>(optional)"
 
-Running this module from command line, if provided with a valid TuneIn AIR
-API information, a song name, and an artist name, will post an update to
-the TuneIn broadcast with the corresponding song and artist info.
+Running this module from command line, if provided with a valid Genius
+API information, a song name, and an artist name, will search for the queried
+song on genius and return a report on the song lyrics
 
 Todo:
-    * Fix how parseMetadata() works.
+    * Add additional tests
 
 .. _TeqBot GitHub Repository:
    https://github.com/kteq-fm/kteq-teqbot
@@ -252,6 +253,16 @@ def run_tests(lyrics,bad_words):
     return res
 
 def evaluate_tests(results):
+    """Convert Test Results into a readable report.
+
+    Given a list of results, converts into a readable report message.
+
+    Args:
+        results (str): unformatted results listings for each profanity test
+
+    Returns:
+            (str): Generated report
+    """
     i = 1
     msg = ""
     swears = ""
@@ -270,6 +281,19 @@ def evaluate_tests(results):
     return msg
 
 def test_code(code, number):
+    """Convert each test code into a readable message.
+
+    Given a code value and a test number, generate a readable report
+    synopsis for each test. This synopsis will simply state whether a song
+    passed or failed a given test.
+
+    Args:
+        code   (int): Code value corresponding to a test result
+        number (int): Test Number
+
+    Returns:
+            (str): Generated synopsis for given test
+    """
     if code == SONG_HAS_SWEARS:
         return "FAIL Profanity Test #" + str(number)
     elif code == SONG_SWEAR_FREE:
@@ -278,6 +302,21 @@ def test_code(code, number):
         return "Song Lyrics Not Found"
 
 def generate_report(song,artist,lyrics,result):
+    """Generate Final Lyrics Report.
+
+    Combining all previous reporting features, this will generate a
+    report containing the song name and artist, as well as
+    the results from each test and the lyrics for the song.
+
+    Args:
+        song      (str): Song Name
+        artist    (str): Song Artist
+        lyrics    (str): Song Lyrics
+        result   (list): List of (Unevaluated) Results
+
+    Returns:
+            (str): Generated report for a song
+    """
     msg = ""
     msg += "Song   Name: " + song + "\n"
     msg += "Song Artist: " + artist + "\n\n"
@@ -412,4 +451,5 @@ if __name__ == "__main__":
 
     bad_words = load_profanity("../profanity.txt")
 
-    print( run(song,artist,bad_words,auth) )
+    msg, status = run(song,artist,bad_words,auth)
+    print( msg, "Clean: ", status )
