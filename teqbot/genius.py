@@ -271,11 +271,11 @@ def evaluate_tests(results):
 
 def test_code(code, number):
     if code == SONG_HAS_SWEARS:
-        return "FAIL Test #" + str(number)
+        return "FAIL Profanity Test #" + str(number)
     elif code == SONG_SWEAR_FREE:
-        return "PASS Test #" + str(number)
+        return "PASS Profanity Test #" + str(number)
     else:
-        return "Song Not Found"
+        return "Song Lyrics Not Found"
 
 def generate_report(song,artist,lyrics,result):
     msg = ""
@@ -348,6 +348,19 @@ def get_api_path(auth, song_title, song_artist):
 
 
 def run(song,artist,bad_words,auth):
+    """Run a report on a song, generating lyrics and potential swears.
+
+
+    Args:
+        song        (str): Song Name
+        artist      (str): Song Artist
+        bad_words  (list): List of Bad Words
+        auth        (str): Genuis API token
+
+    Returns:
+            (str)    : Report containing found swears, and lyrics
+            (boolean): True if runs without finding swears, False if swears found
+    """
     api_path = get_api_path(auth, song, artist)
     report = ""
     lyrics = ""
@@ -357,7 +370,11 @@ def run(song,artist,bad_words,auth):
         report = generate_report(song,artist,lyrics,result)
     else:
         report = "Song Lyrics Not Found"
-    return report
+        return report, True
+    if "FAIL" in report:
+        return report, False
+    else:
+        return report, True
 
 def usage():
     """Print Usage Statement.

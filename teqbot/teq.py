@@ -50,6 +50,7 @@ import time
 import slack
 import stream
 import tunein
+import genius
 import shlex
 import subprocess
 
@@ -115,13 +116,14 @@ class TeqBot:
         self.tuneinStationID  = os.environ.get('TUNEIN_STATION_ID')
         self.tuneinPartnerID  = os.environ.get('TUNEIN_PARTNER_ID')
         self.tuneinPartnerKey = os.environ.get('TUNEIN_PARTNER_KEY')
-        self.geniusToken = os.environ.get('GENIUS_TOKEN')
+        self.geniusToken = { 'Authorization' : 'Bearer ' + os.environ.get('GENIUS_TOKEN') }
         self.logger = os.environ.get('LOGGERPATH')
         self.username = 'TEQ-BOT'
         self.emoji    = ROBOT_EMOJI
         self.channel = None
         self.message = ""
         self.lastSong = ""
+        self.lastSwear = None
 
     def scheduler(self, event='11111111', frequency=STANDARD_FREQUENCY):
         """Scheduler for spawning TeqBot tasks at predetermined intervals.
@@ -193,7 +195,7 @@ class TeqBot:
             if checkLyrics and checkLyricsClock % frequency == 0:
                 # update repo at normal frequency
                 print("Checking Lyrics...")
-                #self.spawn_task(self.python + " teqbot task --lyric")
+                self.spawn_task(self.python + " teqbot task --lyric")
                 checkLyricsClock = 1
             if swearLog and swearLogClock % frequency == 0:
                 # update repo at normal frequency
@@ -268,7 +270,7 @@ class TeqBot:
         """
         self.get_last_played()
         # compare last song to what is currently playing
-        print("Comparing", self.lastSong, "|", self.get_now_playing() )
+        print("NOW PLAYING: Comparing", self.lastSong, "|", self.get_now_playing() )
         newsong = self.check_last_played()
         if newsong:
             print("New Song")
@@ -350,7 +352,37 @@ class TeqBot:
         This task incorporates functionality with the kteq-song-logger
         program found at https://github.com/KTEQ-FM/kteq-song-log.
         """
-        pass
+        np   = self.get_now_playing_logger()
+        last = self.get_last_lyric()
+
+        print("LYRIC: Comparing", np, "|", last )
+        if np != last:
+            self.set_last_lyric(np)
+            song, artist = self.split_metadata(np)
+            bad_words = self.get_profanity()
+            msg = ""
+
+            # Perform genius search and compose message(s)
+            msg, clean = genius.run(song,artist,bad_words,self.geniusToken)
+
+            if not clean:
+                # If current song isn't clean, post to slack
+                warning_msg = ""
+                warning_msg += "Warning! Song Currently Playing On KTEQ "
+                warning_msg += "may contain swears. Generating Report...\n"
+                warning_msg += "```" + msg + "```"
+                self.teq_message(warning_msg, "engineering", SKULL_EMOJI)
+
+            # Post to lyrics.txt file
+            self.post_lyrics(msg)
+        else:
+            print("Same Lyrics")
+
+            #print(msg)
+
+
+
+
 
 
     def task_swear_log(self):
@@ -539,6 +571,62 @@ class TeqBot:
         ping, message = stream.ping_stream(self.stream)
         return message
 
+    def get_profanity(self, filename="profanity.txt"):
+        """Get Profanity List.
+
+        This function opens a profanity.txt file to load in a list of bad
+        words. oh my!
+
+        Returns:
+            str: List of bad words :(
+        Note:
+            This function relies on a "profanity.txt" file to be present
+            in the directory set with the LOGGERPATH environment variable.
+            a different filename can be provided if needed.
+        """
+        filename = os.path.join(self.logger, filename)
+        return genius.load_profanity(filename)
+
+    def get_now_playing_logger(self, filename="nowPlaying.txt"):
+        """Get the current song being played based on a nowplaying.txt file
+
+        This differs from get_now_playing() in that this function
+        attempts to get now playing information from a text file rather than
+        an IceCast stream server, allowing for this to work offline as long
+        as a nowplaying file exists.
+
+        Returns:
+            str: Current song metadata retrieved from text file.
+        Note:
+            This function relies on a "nowPlaying.txt" file to be present
+            in the directory set with the LOGGERPATH environment variable.
+            a different filename can be provided if needed.
+        """
+        filename = os.path.join(self.logger, filename)
+        with open(filename, 'r', newline='') as np:
+            return "".join(np.readlines())
+
+    def post_lyrics(self,lyrics,filename="lyrics.txt"):
+        """Post Lyrics to a lyrics.txt file
+
+        This differs from get_now_playing() in that this function
+        attempts to get now playing information from a text file rather than
+        an IceCast stream server, allowing for this to work offline as long
+        as a nowplaying file exists.
+
+        Returns:
+            None
+
+        Note:
+            This function writes a "lyrics.txt" file to the directory set
+            with the LOGGERPATH environment variable.
+            a different filename can be provided if needed.
+        """
+        filename = os.path.join(self.logger, filename)
+        with open(filename, 'w') as ly:
+            ly.write(lyrics)
+
+
     def ping_stream(self):
         """Check if the stream is online.
 
@@ -648,6 +736,35 @@ class TeqBot:
             self.lastSong = f.read()
         else:
             self.lastSong = ""
+
+    def set_last_lyric(self, song):
+        """Store the metadata for the last song lyric in a teq file
+
+        This method stores the metadata from a song in a hidden
+        .teq.lyric file in the directory which the teqbot program
+        was executed.
+
+        Similar to the .teq.song file, but for updating lyrics.
+
+        Args:
+            song (str): Song metadata to be posted in file.
+
+        """
+        f = open('.teq.lyric', 'w')
+        f.write(song)
+
+    def get_last_lyric(self):
+        """Read the teq song lyric to retrieve last song played.
+
+        This method reads the metadata of a song from a hidden
+        .teq.lyric file.
+
+        """
+        if os.path.exists('.teq.lyric'):
+            f = open('.teq.lyric', 'r')
+            return f.read()
+        else:
+            return ""
 
     def check_last_played(self):
         """Check the teq song file to determine if a new song is being played.
@@ -767,6 +884,22 @@ class TeqBot:
             distinction.
         """
         return metadata.replace("__by__", "by")
+
+    def split_metadata(self, metadata):
+        """Clean metadata into song and artist tuple
+
+        """
+        # split the metadata at the correct position
+        split  = metadata.split("__by__", 1)
+        song   = split[0].rstrip().lstrip()
+
+        # check if artist and song were split
+        if len(split) > 1:
+            artist = split[1].rstrip().lstrip()
+        else:
+            artist = ""
+
+        return song,artist
 
 if __name__ == "__main__":
     teq = TeqBot()
