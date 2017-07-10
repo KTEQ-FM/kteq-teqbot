@@ -161,6 +161,8 @@ class TeqBot:
         nowPlayingClock   = 0
         streamStatusClock = 0
         updateRepoClock   = 0
+        checkLyricsClock  = 0
+        swearLogClock     = 0
 
         self.set_last_played("None")
         self.set_stat_file("Running")
@@ -175,9 +177,6 @@ class TeqBot:
         checkLyrics   = int( "{0:b}".format( int( event, 2) & int(CHECK_LYRICS, 2) ) )
         swearLog      = int( "{0:b}".format( int( event, 2) & int(SWEAR_LOG,    2) ) )
 
-        nowPlaying = True
-        streamStatus = True
-
         print("running Scheduler")
         while True:
             #trigger events
@@ -185,22 +184,39 @@ class TeqBot:
                 # only check nowplaying at 1/2 frequeny
                 print("Handling NowPlaying Status...")
                 self.spawn_task(self.python + " teqbot task --nowplaying")
-                nowPlayingClock = 0
+                nowPlayingClock = 1
             if streamStatus and streamStatusClock % (frequency * 20) == 0:
-                # only check status at 1/5th frequency
+                # only check status at 1/20th frequency
                 print("Handling Stream Status...")
                 self.spawn_task(self.python + " teqbot task --status")
-                streamStatusClock = 0
+                streamStatusClock = 1
+            if checkLyrics and checkLyricsClock % frequency == 0:
+                # update repo at normal frequency
+                print("Checking Lyrics...")
+                #self.spawn_task(self.python + " teqbot task --lyric")
+                checkLyricsClock = 1
+            if swearLog and swearLogClock % frequency == 0:
+                # update repo at normal frequency
+                print("Checking Swear Log...")
+                #self.spawn_task(self.python + " teqbot task --update")
+                swearLogClock = 1
             if updateRepo and updateRepoClock % (frequency * 1200) == 0:
-                # update repo at 1/100th frequency
+                # update repo at 1/1200th frequency
                 print("Updating TeqBot...")
                 self.spawn_task(self.python + " teqbot task --update")
-                updateRepoClock = 0
+                updateRepoClock = 1
             time.sleep(1)
-            print(nowPlayingClock,streamStatusClock,updateRepoClock)
-            nowPlayingClock   = nowPlayingClock   + 1
-            streamStatusClock = streamStatusClock + 1
-            updateRepoClock   = updateRepoClock   + 1
+            nowPlayingClock   += 1
+            streamStatusClock += 1
+            updateRepoClock   += 1
+            checkLyricsClock  += 1
+            swearLogClock     += 1
+            print("n:", nowPlayingClock,
+                  "s:", streamStatusClock,
+                  "l:", checkLyricsClock,
+                  "w:", swearLogClock,
+                  "u:", updateRepoClock)
+
             # break out of the scheduler if stat file contains "Done"
             if self.check_stat_file("Done"):
                 self.delete_stat_file()
