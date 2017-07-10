@@ -1,22 +1,22 @@
 """KTEQ-FM TUNEIN API FUNCTIONS.
 
 This module contains all of the TuneIn AIR API calls for the TeqBot project.
-These api calls are all located centrally within this module for convenience. 
-All API calls will be built in this module, and corresponding wapper functions 
-will be created for each of these calls for TeqBot to use. The TuneIn AIR API 
-is used to update the song metadata on the TuneIn streaming application. This 
-allows for listeners to get real-time updates on songs being broadcast from the 
+These api calls are all located centrally within this module for convenience.
+All API calls will be built in this module, and corresponding wapper functions
+will be created for each of these calls for TeqBot to use. The TuneIn AIR API
+is used to update the song metadata on the TuneIn streaming application. This
+allows for listeners to get real-time updates on songs being broadcast from the
 online stream, with accompanying album art if available.
 
-Please visit http://tunein.com/broadcasters/api/ for more information on how the 
+Please visit http://tunein.com/broadcasters/api/ for more information on how the
 TuneIn AIR API works.
 
 Example:
 
         $ python tunein.py "<TUNEIN_STATION_ID>" "<PARTNER_ID>" "<PARTNER_KEY>" "song" "artist"
 
-Running this module from command line, if provided with a valid TuneIn AIR 
-API information, a song name, and an artist name, will post an update to 
+Running this module from command line, if provided with a valid TuneIn AIR
+API information, a song name, and an artist name, will post an update to
 the TuneIn broadcast with the corresponding song and artist info.
 
 Todo:
@@ -37,20 +37,20 @@ import urllib.parse
 def post(sID, pID, pKey, metadata):
     """Post song information to TuneIn.
 
-    Perform an HTTP GET request to post song name and artist name for a 
-    song to TuneIn. This will update this information to all listeners 
+    Perform an HTTP GET request to post song name and artist name for a
+    song to TuneIn. This will update this information to all listeners
     using TuneIn to stream.
 
-    While a given TuneIn station ID can be easily discovered in the 
-    station's TuneIn URL, the TuneIn partner ID and partner key must 
-    be obtained by contacting TuneIn. Information regarding how to do 
+    While a given TuneIn station ID can be easily discovered in the
+    station's TuneIn URL, the TuneIn partner ID and partner key must
+    be obtained by contacting TuneIn. Information regarding how to do
     this can be found at http://tunein.com/broadcasters/api/.
 
     Args:
         sID (str): TuneIn Station ID
         pID (str): TuneIn Partner ID
         pKey (str): TuneIn Partner Key
-        metadata (str): Song metadata string containing 
+        metadata (str): Song metadata string containing
             song name and artist name.
 
     Example:
@@ -64,12 +64,12 @@ def post(sID, pID, pKey, metadata):
 
     Todo:
         Will need to devise a more sophisticated method of
-        cleaning metadata in the future, as of right now 
-        this will screw up on any song with the actual word 
+        cleaning metadata in the future, as of right now
+        this will screw up on any song with the actual word
         "by" in either the song name or the artist name.
-        Easiest solution will be to set up the metadata 
-        so that the separator is something unique, that 
-        won't be entered on the DJ's end when recording 
+        Easiest solution will be to set up the metadata
+        so that the separator is something unique, that
+        won't be entered on the DJ's end when recording
         songs on the station computer.
     """
     #split metadata into song and artist info
@@ -90,15 +90,15 @@ def post(sID, pID, pKey, metadata):
 def parseMetadata(metadata):
     """Convert metadata string into formatted song and artist strings.
 
-    This function takes a full metadata string and splits it into an 
-    artist string and a song string. This allows TuneIn's application 
-    to distinguish the two fields for album art fetching. The function 
-    also modifies the strings so that they are ready for the tunein.post() 
-    function call, by replacing spaces with "+" symbols to work with 
+    This function takes a full metadata string and splits it into an
+    artist string and a song string. This allows TuneIn's application
+    to distinguish the two fields for album art fetching. The function
+    also modifies the strings so that they are ready for the tunein.post()
+    function call, by replacing spaces with "+" symbols to work with
     the HTTP GET request.
 
     Args:
-        metadata (str): Song metadata string containing 
+        metadata (str): Song metadata string containing
             song name and artist name.
 
     Returns:
@@ -108,7 +108,7 @@ def parseMetadata(metadata):
                 artist (str): Artist Name.
 
     Example:
-    
+
         >>> import tunein
         >>> metadata = "Square Peg Round Hole by WakeyWakey"
         >>> msg = tunein.parseMetadata(metadata)
@@ -117,19 +117,19 @@ def parseMetadata(metadata):
 
     Todo:
         Will need to devise a more sophisticated method of
-        cleaning metadata in the future, as of right now 
-        this will screw up on any song with the actual word 
+        cleaning metadata in the future, as of right now
+        this will screw up on any song with the actual word
         "by" in either the song name or the artist name.
-        Easiest solution will be to set up the metadata 
-        so that the separator is something unique, that 
-        won't be entered on the DJ's end when recording 
+        Easiest solution will be to set up the metadata
+        so that the separator is something unique, that
+        won't be entered on the DJ's end when recording
         songs on the station computer.
     """
 
     # split the metadata at the correct position
     split  = metadata.split("__by__", 1)
     song   = split[0].rstrip().lstrip()
-    
+
     # check if artist and song were split
     if len(split) > 1:
         artist = split[1].rstrip().lstrip()
@@ -159,20 +159,20 @@ def usage():
         msg (str): Usage Statement.
 
     Example:
-    
+
         >>> import tunein
         >>> msg = tunein.usage()
         >>> msg
         '<tunein.py usage statement>'
     """
-    msg = "stream.py usage:\n"
+    msg = "tunein.py usage:\n"
     msg = msg + "$ python tunein.py \"<TUNEIN_STATION_ID>\" "
     msg = msg + "\"<TUNEIN_PARTNER_ID>\" "
     msg = msg + "\"<TUNEIN_PARTNER_KEY>\" "
     msg = msg + "\"<SONG_NAME>\" "
     msg = msg + "\"<SONG_ARTIST>\" "
     return msg
-    
+
 
 if __name__ == "__main__":
     if(len(sys.argv) > 5):
