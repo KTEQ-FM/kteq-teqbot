@@ -69,12 +69,12 @@ def command_handler(args):
             event = "{0:b}".format( int( event, 2) | int(NOW_PLAYING, 2) )
         if "--status" in args or "-s" in args:
             event = "{0:b}".format( int( event, 2) | int(STREAM_STATUS, 2) )
-        if "--update" in args or "-u" in args:
-            event = "{0:b}".format( int( event, 2) | int(UPDATE_REPO, 2) )
         if "--lyric" in args or "-l" in args:
             event = "{0:b}".format( int( event, 2) | int(CHECK_LYRICS, 2) )
         if "--swear" in args or "-w" in args:
             event = "{0:b}".format( int( event, 2) | int(SWEAR_LOG, 2) )
+        if "--update" in args or "-u" in args:
+            event = "{0:b}".format( int( event, 2) | int(UPDATE_REPO, 2) )
         teq.scheduler(event)
     elif "TASK" in args:
         # ONLY run one individual task ONCE
@@ -82,12 +82,12 @@ def command_handler(args):
             teq.task_now_playing()
         elif "--status" in args or "-s" in args:
             teq.task_stream_status()
+        elif "--lyric" in args or "-l" in args:
+            teq.task_check_lyrics()
+        elif "--swear" in args or "-w" in args:
+            teq.task_swear_log()
         elif "--update" in args or "-u" in args:
             teq.task_update_repo()
-        elif "--lyric" in args or "-l" in args:
-            pass
-        elif "--swear" in args or "-w" in args:
-            pass
     elif "KILL" in args:
         print("Halting Scheduler running on different process...")
         teq.set_stat_file("Done")

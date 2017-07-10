@@ -330,6 +330,45 @@ class TeqBot:
             self.teq_message(msg, "engineering", SKULL_EMOJI )
             self.set_stat_file("Stream Down")
 
+    def task_check_lyrics(self):
+        """Perform a quick auto-check of a song's lyrics
+
+        This tasks reads a nowPlaying.txt file to determine
+        what song is currently being played on KTEQ. After
+        determining the song, this task will attempt to
+        locate song lyrics if they haven't yet been found.
+        After finding the lyrics, a preliminary search for
+        swear words will be conducted, and a report will be
+        sent to a lyrics.txt file which can be read in by another
+        program.
+
+        This task uses a nowPlaying text file to determine
+        the current song playing and is independed of the
+        nowplaying task. This allows this function to still
+        operate even in the event that the stream is down.
+
+        This task incorporates functionality with the kteq-song-logger
+        program found at https://github.com/KTEQ-FM/kteq-song-log.
+        """
+        pass
+
+
+    def task_swear_log(self):
+        """Submit swear log entries to slack
+
+        This tasks reads a json file containing data for a
+        swear log and passes this information to a slack
+        channel.
+
+        If a new swear log entry has been submitted recently, this
+        will be sent to slack so that management can be informed of the
+        event.
+
+        This task incorporates functionality with the kteq-song-logger
+        program found at https://github.com/KTEQ-FM/kteq-song-log.
+        """
+        pass
+
     def task_update_repo(self):
         """Update TeqBot's repository (NOT IMPLEMENTED)
 
